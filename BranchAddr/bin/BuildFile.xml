@@ -8,3 +8,7 @@
  <use name="FWCore/FWLite"/>
  <use name="rootinteractive"/>
 </bin>
+<bin name="alja-test" file="alja-test.cc">
+<use name="curl"/>
+<lib name="curl"/>
+</bin>
