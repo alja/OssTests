@@ -1,4 +1,4 @@
-<bin name="test-bname-for.exe" file="test-bname-for.cc">
+<bin name="printAssociations" file="associations.cc">
  <use name="DataFormats/Common"/>
  <use name="DataFormats/FWLite"/>
  <use name="DataFormats/TrackReco"/>
