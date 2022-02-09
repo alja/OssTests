@@ -58,99 +58,6 @@ void printClusterCaloParticleAssociation(fwlite::Event* event)
     }
 }
 //------------------------------------------------------------------------------------------------
-void printCaloParticleClusterAssociation(fwlite::Event* event)
-{
-    /*
-edm::AssociationMap<edm::OneToManyWithQualityGeneric<
-vector<reco::CaloCluster>,
-vector<CaloParticle>,float,
-unsigned int,
-edm::RefProd<vector<reco::CaloCluster> >,
-edm::RefProd<vector<CaloParticle> >,
-edm::Ref<vector<reco::CaloCluster>,reco::CaloCluster,edm::refhelper::FindUsingAdvance<vector<reco::CaloCluster>,reco::CaloCluster> >,
-edm::Ref<vector<CaloParticle>,CaloParticle,edm::refhelper::FindUsingAdvance<vector<CaloParticle>,CaloParticle> > > >
-*/
-
-    fwlite::Handle<hgcal::RecoToSimCollection> handle;
-    handle.getByLabel(*event, "layerClusterCaloParticleAssociationProducer");
-
-    printf("\nAssociations reco::ClusterCluster to CaloParticle  num_associations = %lu\n", handle->size());
-
-    for (auto ii = handle->begin(); ii != handle->end(); ++ii)
-    {
-        auto &val = ii->val; // presumably typedef std::vector<std::pair<ValRef, Q> > val_type
-        printf("reco::CaloCluster idx = %d associated with %lu CaloParicles:\n", ii->key.index(), val.size());
-        for (unsigned int j = 0; j < val.size(); ++j)
-        {
-            auto quality = val[j].second;
-            printf("CaloParticle ref idx = [%2u] qualitity=(%f)\n", val[j].first.index(), quality);
-        }
-        printf("\n");
-    }
-}
-
-//------------------------------------------------------------------------------------------------
-void printClusterSimClusterAssociation(fwlite::Event* event)
-{
-    /*
-    edm::AssociationMap<
-    edm::OneToManyWithQualityGeneric<
-    vector<SimCluster>,
-    vector<reco::CaloCluster>,
-    pair<float,float>,
-    unsigned int,
-    edm::RefProd<vector<SimCluster> >,
-    edm::RefProd<vector<reco::CaloCluster> >,
-    edm::Ref<vector<SimCluster>,SimCluster,edm::refhelper::FindUsingAdvance<vector<SimCluster>,SimCluster> >,
-    edm::Ref<vector<reco::CaloCluster>,reco::CaloCluster,edm::refhelper::FindUsingAdvance<vector<reco::CaloCluster>,reco::CaloCluster> > 
-     > 
-     >
-*/
-    fwlite::Handle<hgcal::SimToRecoCollectionWithSimClusters> handle;
-    handle.getByLabel(*event, "layerClusterSimClusterAssociationProducer");
-    printf("\nAssociations SimCluster to reco::CaloClusters  num_association=%lu \n", handle->size());
-
-    for (auto ii = handle->begin(); ii != handle->end(); ++ii)
-    {
-        printf("SimCluster idx = %d associated with cluster indices:\n", ii->key.index());
-        auto &val = ii->val; // presumably typedef std::vector<std::pair<ValRef, Q> > val_type
-        for (unsigned int j = 0; j < val.size(); ++j)
-        {
-            auto quality = val[j].second;
-            printf("reco::CaloCluster ref idx = %2u qualitites=(%f, %f)\n", val[j].first.index(), quality.first, quality.second);
-        }
-        printf("\n");
-    }
-}
-//------------------------------------------------------------------------------------------------
-void printSimClusterClusterAssociation(fwlite::Event* event)
-{ 
-    /* OneToManyWithQualityGeneric<vector<reco::CaloCluster>,
-    vector<SimCluster>,
-    float,unsigned int,
-    edm::RefProd<vector<reco::CaloCluster> >,
-    edm::RefProd<vector<SimCluster> >,
-    edm::Ref<vector<reco::CaloCluster>,reco::CaloCluster,edm::refhelper::FindUsingAdvance<vector<reco::CaloCluster>,reco::CaloCluster> >,
-    edm::Ref<vector<SimCluster>,SimCluster,edm::refhelper::FindUsingAdvance<vector<SimCluster>,SimCluster> > > >  
-    */
-    fwlite::Handle<hgcal::RecoToSimCollectionWithSimClusters> handle;
-    handle.getByLabel(*event, "layerClusterSimClusterAssociationProducer");
-    printf("\nAssociations reco::CaloClusters to SimCluster num_association=%lu \n", handle->size());
-
-    for (auto ii = handle->begin(); ii != handle->end(); ++ii)
-    {
-        printf("reco::CaloCluster idx = %d associated with cluster indices:\n", ii->key.index());
-        auto &val = ii->val; // presumably typedef std::vector<std::pair<ValRef, Q> > val_type
-        for (unsigned int j = 0; j < val.size(); ++j)
-        {
-            auto quality = val[j].second;
-            printf("SimCluster ref idx = %2u quality=(%f)\n", val[j].first.index(), quality);
-        }
-        printf("\n");
-    }
-}
-
-//------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -164,19 +71,6 @@ int main(int argc, char* argv[])
     printf("file has %d events \n", nmax);
     auto event = new fwlite::Event(file);
 
-
-    for (int e = 0; e < nmax; e++)
-    {
-        printf("event [%d]============================= \n", e);
-        event->to(e);
-        event_tree->LoadTree(e);
-
-        printClusterCaloParticleAssociation(event);
-        printCaloParticleClusterAssociation(event);
-        
-        //printClusterSimClusterAssociation(event);
-        //printSimClusterClusterAssociation(event);
-        break; // at the moment check only first event
-    }
+    printClusterCaloParticleAssociation(event);
     return 0;
 }
