@@ -13,6 +13,10 @@
 #include "SimDataFormats/Associations/interface/LayerClusterToCaloParticleAssociatorBaseImpl.h"
 #include "SimDataFormats/Associations/interface/LayerClusterToSimClusterAssociatorBaseImpl.h"
 
+
+#include "Fireworks/Core/src/FWGenericHandle.h"
+
+
 void printClusterCaloParticleAssociation(fwlite::Event* event)
 {
     /*
@@ -57,6 +61,32 @@ void printClusterCaloParticleAssociation(fwlite::Event* event)
         }
     }
 }
+
+
+void printFromObj( const edm::ObjectWithDict& data )
+{
+    const hgcal::SimToRecoCollection* asMap = reinterpret_cast<const hgcal::SimToRecoCollection*>(data.address());
+
+    int i = 0;
+    for (auto ii = asMap->begin(); ii != asMap->end(); ++ii, ++i)
+    {
+        // auto helperKeyVal = *ii;
+        auto &key = *ii->key; // key is edm::Ref -- so we de-ref it.
+                              // std::cout << "type " << key.type;
+
+        printf("  %d, index=%d something like energy=%f\n", i, ii->key.index(), key.energy());
+        auto &val = ii->val; // presumably typedef std::vector<std::pair<ValRef, Q> > val_type
+        int val_size = val.size();
+        for (int j = 0; j < val_size; ++j)
+        {
+            auto &ref_to_cc = *val[j].first;
+            auto qq = val[j].second;
+            printf("reco::CaloCluster   %2d index=%2u r=%f z=%f, quality=%f, %f\n",
+                   j, val[j].first.index(), ref_to_cc.position().r(), ref_to_cc.z(), qq.first, qq.second);
+        }
+    }
+}
+
 //------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
@@ -66,11 +96,21 @@ int main(int argc, char* argv[])
         return 1;
     }
     auto file = TFile::Open(argv[1]);
-    auto event_tree = dynamic_cast<TTree*>(file->Get("Events"));
-    int nmax =  event_tree->GetEntries();
-    printf("file has %d events \n", nmax);
     auto event = new fwlite::Event(file);
 
-    printClusterCaloParticleAssociation(event);
+    std::string typeName="hgcal::SimToRecoCollection";
+    std::string moduleLabel = "layerClusterCaloParticleAssociationProducer";
+    std::string productInstanceLabel = "";
+    std::string processName = "";
+
+    TClass* ctype = TClass::GetClass(typeName.c_str());
+    edm::InputTag tag(moduleLabel, productInstanceLabel, processName);
+    edm::TypeWithDict type(*(ctype->GetTypeInfo()));
+    edm::FWGenericHandle handle(type);
+    event->getByLabel(tag, handle);
+
+    const edm::ObjectWithDict& data = *handle;
+    printFromObj(data);
+
     return 0;
 }
